@@ -1,0 +1,382 @@
+import pygame
+pygame.init()
+
+
+width = 800
+height = 800
+screen = pygame.display.set_mode([width,height])
+pygame.display.set_caption('Pac Man')
+fps = 120
+timer = pygame.time.Clock()
+main_menu = True
+title_font = pygame.font.Font('K2D-Bold.ttf', 112)
+font = pygame.font.Font('K2D-Bold.ttf', 72)
+score_font = pygame.font.Font('K2D-Bold.ttf', 30)
+pacmanimg = pygame.image.load(r"C:\Users\blago\Dropbox\My PC (DESKTOP-TT61KPG)\Desktop\PACMAN\Pacmanimg.png")
+pacmanimg = pygame.transform.scale(pacmanimg, (800,800))
+squaresize = 40
+designchoice = 0
+score = 0
+speed = 5
+
+
+class Button:
+   def __init__(self, txt, pos):
+       self.txt = txt
+       self.pos = pos
+       self.button = pygame.Rect(self.pos[0], self.pos[1], 750,80)
+       self.hovered = False
+    
+   def check_hover(self, mouse_pos):
+    if self.button.collidepoint(mouse_pos):
+        self.hovered = True
+
+   def draw(self):
+      button_surface = pygame.Surface((750, 80), pygame.SRCALPHA)
+      pygame.draw.rect(button_surface, (255,255,175,0), (0,0,750,80))
+      color = (255, 255, 175)
+      hover_color = (250, 250, 57)
+      if self.hovered:
+         color = hover_color
+      text_surface = font.render(self.txt, True, color)
+      text_rect = text_surface.get_rect(center=(button_surface.get_width() // 2, button_surface.get_height() // 2))
+      button_surface.blit(text_surface, text_rect)
+      screen.blit(button_surface, self.pos)
+      
+   def check_clicked(self): 
+      return self.hovered and pygame.mouse.get_pressed()[0] 
+      
+
+class Dot(pygame.sprite.Sprite):
+   def __init__(self, x, y):
+      pygame.sprite.Sprite.__init__(self)
+      image = pygame.image.load(r"C:\Users\blago\Dropbox\My PC (DESKTOP-TT61KPG)\Desktop\PACMAN\sprites\dot.png")
+      self.image = pygame.transform.scale(image, (squaresize // 2 , squaresize // 2))
+      self.rect = self.image.get_rect()
+      self.rect.center = (x,y)
+
+dot_group = pygame.sprite.Group()
+
+class Lemon(pygame.sprite.Sprite):
+   def __init__(self, x, y):
+      pygame.sprite.Sprite.__init__(self)
+      image = pygame.image.load(r"C:\Users\blago\Dropbox\My PC (DESKTOP-TT61KPG)\Desktop\PACMAN\sprites\lemons.png")
+      self.image = pygame.transform.scale(image, (squaresize + 20, squaresize + 20 ))
+      self.rect = self.image.get_rect()
+      self.rect.center = (x,y)
+   
+lemon_group = pygame.sprite.Group()
+
+class Redghost(pygame.sprite.Sprite):
+   def __init__(self, x, y):
+      pygame.sprite.Sprite.__init__(self)
+      image = pygame.image.load(r"C:\Users\blago\Dropbox\My PC (DESKTOP-TT61KPG)\Desktop\PACMAN\sprites\redghost.png")
+      self.image = pygame.transform.scale(image, (squaresize, squaresize))
+      self.rect = self.image.get_rect()
+      self.rect.x = x
+      self.rect.y = y
+
+redghost_group = pygame.sprite.Group()
+
+
+class Map: 
+
+   def __init__(self,data):
+      self.squarelist = []
+
+      b1 = pygame.image.load(r"C:\Users\blago\Dropbox\My PC (DESKTOP-TT61KPG)\Desktop\PACMAN\sprites\b1.png")
+      b2 = pygame.image.load(r"C:\Users\blago\Dropbox\My PC (DESKTOP-TT61KPG)\Desktop\PACMAN\sprites\b2.png")
+      b3 = pygame.image.load(r"C:\Users\blago\Dropbox\My PC (DESKTOP-TT61KPG)\Desktop\PACMAN\sprites\b3.png")
+      b4 = pygame.image.load(r"C:\Users\blago\Dropbox\My PC (DESKTOP-TT61KPG)\Desktop\PACMAN\sprites\b4.png")
+      b5 = pygame.image.load(r"C:\Users\blago\Dropbox\My PC (DESKTOP-TT61KPG)\Desktop\PACMAN\sprites\b5.png")
+      b6 = pygame.image.load(r"C:\Users\blago\Dropbox\My PC (DESKTOP-TT61KPG)\Desktop\PACMAN\sprites\b6.png")
+
+      rowcount = 0
+      for row in data:
+         columncount = 0
+         for square in row:
+            if square == 1:
+               image = pygame.transform.scale(b1, (squaresize, squaresize))
+               img_rect = image.get_rect()
+               img_rect.x = columncount * squaresize
+               img_rect.y = rowcount * squaresize
+               square = (image, img_rect)
+               self.squarelist.append(square)
+            if square == 2:
+               image = pygame.transform.scale(b2, (squaresize, squaresize))
+               img_rect = image.get_rect()
+               img_rect.x = columncount * squaresize
+               img_rect.y = rowcount * squaresize
+               square = (image, img_rect)
+               self.squarelist.append(square)
+            if square == 3:
+               image = pygame.transform.scale(b3, (squaresize, squaresize))
+               img_rect = image.get_rect()
+               img_rect.x = columncount * squaresize
+               img_rect.y = rowcount * squaresize
+               square = (image, img_rect)
+               self.squarelist.append(square)
+            if square == 4:
+               image = pygame.transform.scale(b4, (squaresize, squaresize))
+               img_rect = image.get_rect()
+               img_rect.x = columncount * squaresize
+               img_rect.y = rowcount * squaresize
+               square = (image, img_rect)
+               self.squarelist.append(square)      
+            if square == 5:
+               image = pygame.transform.scale(b5, (squaresize, squaresize))
+               img_rect = image.get_rect()
+               img_rect.x = columncount * squaresize
+               img_rect.y = rowcount * squaresize
+               square = (image, img_rect)
+               self.squarelist.append(square)   
+            if square == 6:
+               image = pygame.transform.scale(b6, (squaresize, squaresize))
+               img_rect = image.get_rect()
+               img_rect.x = columncount * squaresize
+               img_rect.y = rowcount * squaresize
+               square = (image, img_rect)
+               self.squarelist.append(square)   
+            if square == 7:
+               dot = Dot(columncount * squaresize + (squaresize // 2), rowcount * squaresize + (squaresize // 2))
+               dot_group.add(dot)
+            if square == 8:
+               lemon = Lemon(columncount * squaresize + (squaresize // 2), rowcount * squaresize + (squaresize // 2))   
+               lemon_group.add(lemon)
+            if square == 9:
+               redghost = Redghost(columncount * squaresize , rowcount * squaresize)
+               redghost_group.add(redghost)
+               
+            columncount += 1
+         rowcount += 1      
+     
+   def drawmap(self):
+      for square in self.squarelist:
+         screen.blit(square[0], square[1])
+
+   def check_collision(self,rect):
+      for square in self.squarelist:
+         if square[1].colliderect(rect):
+            return True
+      return False   
+      
+
+maplist = [
+[4, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 4], 
+[4, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4], 
+[4, 0, 0, 0, 5, 3, 0, 0, 0, 0, 3, 0, 0, 5, 2, 2, 1, 0, 0, 4], 
+[4, 0, 3, 0, 0, 5, 1, 0, 0, 5, 2, 1, 0, 0, 0, 0, 0, 0, 0, 4], 
+[4, 0, 4, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 5, 2, 2, 1, 0, 0, 4], 
+[4, 0, 4, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 4], 
+[4, 0, 4, 0, 0, 3, 2, 2, 1, 0, 0, 5, 2, 2, 1, 0, 4, 0, 0, 4], 
+[4, 0, 6, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 4, 0, 3, 4], 
+[4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 4, 0, 4, 4], 
+[4, 0, 3, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 4, 0, 6, 4], 
+[4, 0, 4, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 4, 0, 0, 4], 
+[4, 0, 6, 1, 0, 5, 2, 2, 2, 2, 2, 2, 2, 2, 6, 0, 6, 0, 0, 4], 
+[4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 4], 
+[4, 0, 3, 2, 2, 2, 3, 0, 0, 0, 0, 3, 0, 5, 2, 1, 0, 3, 0, 4], 
+[4, 0, 4, 0, 0, 0, 4, 0, 5, 2, 2, 6, 0, 0, 0, 0, 0, 4, 0, 4], 
+[4, 0, 6, 2, 2, 2, 1, 0, 6, 0, 0, 0, 0, 5, 2, 2, 2, 6, 0, 4], 
+[4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 4], 
+[4, 0, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 0, 4], 
+[4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 9, 0, 0, 4], 
+[4, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 4]
+]
+
+map1 = Map(maplist)
+
+
+class Character():
+   def __init__(self, x, y, designchoice):
+      self.designchoice = designchoice
+      self.set_image()
+      self.image = pygame.transform.scale(self.image, (squaresize,squaresize))
+      self.rect = self.image.get_rect()
+      self.rect.x = x
+      self.rect.y = y
+
+   def set_image(self):
+      if designchoice == 0:
+        self.image = pygame.image.load(r"C:\Users\blago\Dropbox\My PC (DESKTOP-TT61KPG)\Desktop\PACMAN\sprites\pcmn.png")
+      elif designchoice == 1:
+        self.image = pygame.image.load(r"C:\Users\blago\Dropbox\My PC (DESKTOP-TT61KPG)\Desktop\PACMAN\sprites\pcmngreen.png")   
+      elif designchoice == 2:
+        self.image = pygame.image.load(r"C:\Users\blago\Dropbox\My PC (DESKTOP-TT61KPG)\Desktop\PACMAN\sprites\pcmnred.png")
+
+   def update_image(self, designchoice):
+    self.designchoice = designchoice
+    self.set_image()
+    self.image = pygame.transform.scale(self.image, (40, 40))    
+
+   def drawchar(self):
+      screen.blit(self.image, self.rect)
+   
+   def move(self,x,y,map_obj):
+      self.rect.x += x
+      self.rect.y += y
+
+      if map_obj.check_collision(self.rect):
+         self.rect.x -= x
+         self.rect.y -= y
+
+   def update(self, x, y, map_obj):
+      self.move(x,y, map_obj)     
+
+
+def draw_menu():
+   
+   global main_menu,command
+
+   title_text = title_font.render('PAC MAN', True, (255,255,175))
+   screen.blit(title_text, (width / 2 - title_text.get_width() / 2, 100))
+
+   button_distance = 120
+   play_button = Button('PLAY',(width / 2 - 750 / 2, height / 2 - 80 / 2))
+
+   design_button = Button('DESIGN CHARACTER',(width / 2 - 750 / 2, height / 2 + button_distance - 80 / 2))
+
+   controls_button = Button('CONTROLS', (width / 2 - 750 / 2, height / 2 + 2 * button_distance - 80 / 2))
+
+   play_button.check_hover(pygame.mouse.get_pos())
+   design_button.check_hover(pygame.mouse.get_pos())
+   controls_button.check_hover(pygame.mouse.get_pos())
+
+   play_button.draw()
+   design_button.draw()
+   controls_button.draw()
+
+   if play_button.check_clicked():
+    command = 1
+    main_menu = False
+   elif design_button.check_clicked():
+    command = 2
+    main_menu = False
+   elif controls_button.check_clicked():
+    command = 3
+    main_menu = False
+
+
+def draw_design_screen():
+   global command, main_menu, designchoice
+   screen.fill((19,13,88))
+
+   screen.blit(font.render("Choose a colour:", False, (255,255,175)), (130,150))
+   
+   back_button = Button('BACK', (-260,0))
+   back_button.check_hover(pygame.mouse.get_pos())
+   back_button.draw()
+   if back_button.check_clicked():
+    command = 0 
+    main_menu = True
+      
+   yellowbutton = Button('Yellow', (30,300))
+   yellowbutton.check_hover(pygame.mouse.get_pos())
+   yellowbutton.draw()
+   if yellowbutton.check_clicked():
+    designchoice = 0
+    command = 0 
+    main_menu = True
+
+   greenbutton = Button('Green', (30,400))
+   greenbutton.check_hover(pygame.mouse.get_pos())
+   greenbutton.draw()
+   if greenbutton.check_clicked():
+    designchoice = 1
+    command = 0 
+    main_menu = True
+
+   redbutton = Button('Red', (30,500))
+   redbutton.check_hover(pygame.mouse.get_pos())
+   redbutton.draw()
+   if redbutton.check_clicked():
+    designchoice = 2
+    command = 0 
+    main_menu = True 
+    
+
+def score_count(text, font, color, x, y):
+   image = font.render(text, True, color)
+   screen.blit(image, (x,y))
+
+
+def draw_play_screen(pacman):
+   global score, speed
+   screen.fill((19,13,88))
+   map1.drawmap()
+   pacman.drawchar()
+   dot_group.draw(screen)
+   lemon_group.draw(screen)
+   redghost_group.draw(screen)
+   
+
+   if pygame.sprite.spritecollide(pacman, dot_group, True):
+      score += 10   
+   if pygame.sprite.spritecollide(pacman, lemon_group, True):
+      score += 50
+      speed = 7
+   if pygame.sprite.spritecollide(pacman, redghost_group, False):
+      pygame.QUIT()
+         
+   score_count("Score: " + str(score), score_font, [255,255,175], 340 , -2)
+
+def draw_controls_screen():
+   global command, main_menu
+   screen.fill((19,13,88))
+
+   back_button = Button('BACK', (-260,0))
+   back_button.check_hover(pygame.mouse.get_pos())
+   back_button.draw()
+   if back_button.check_clicked():
+    command = 0 
+    main_menu = True
+
+   clr = (255, 255, 175)
+   screen.blit(font.render("Controls:", False, clr), (65,150))
+   screen.blit(font.render("Move up : W", False, clr), (65, 250))
+   screen.blit(font.render("Move down : S", False, clr), (65, 350))
+   screen.blit(font.render("Move left : A", False, clr), (65, 450))
+   screen.blit(font.render("Move right : D", False, clr), (65, 550))
+   
+
+run = True
+pause = False
+pacman = Character(100, height - 80, designchoice)
+while run:
+   screen.blit(pacmanimg, (0, 0)) 
+   timer.tick(fps)
+
+   for event in pygame.event.get():
+      if event.type == pygame.QUIT:
+         run = False
+      elif event.type == pygame.KEYDOWN:
+         if event.key == pygame.K_p:
+            pause = not pause
+
+   if not pause:
+     if main_menu:
+         draw_menu()
+     elif command == 1:
+        draw_play_screen(pacman)
+     elif command == 2:
+        draw_design_screen()
+        pacman.update_image(designchoice)
+     elif command == 3:
+        draw_controls_screen()   
+   
+   
+   key = pygame.key.get_pressed()
+   if key[pygame.K_a]:
+      pacman.update(-speed,0,map1)
+   if key[pygame.K_d]:
+      pacman.update(speed,0,map1)
+   if key[pygame.K_s]:
+      pacman.update(0,speed,map1)
+   if key[pygame.K_w]:
+      pacman.update(0,-speed,map1)      
+
+   pygame.display.flip()
+
+   
+pygame.quit()      
+
